@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+
+<meta charset="utf-8">
+<title>Hello Cosplay</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" href="layui/css/layui.css" media="all">
+<html lang="en">
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 微软雅黑;
+            background: #b18cfb;
+        }
+
+        header {
+            height: 60px;
+            line-height: 60px;
+            width: 100%;
+            color: #fff;
+            font-family: "黑体";
+            font-weight: 200;
+            font-size: 20px;
+            /*背景色渐变*/
+            background: linear-gradient(to bottom right, #9d06fb, #b18cfb);
+        );
+        }
+
+        #content {
+            background: #00000000;
+            text-align: center;
+        }
+
+        .menu {
+            display: block;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 40px;
+            height: 40px;
+            color: #474747;
+            padding: 10px;
+            border-top: 0px solid #eee;
+            background: #00000000;
+        );
+        }
+
+        img {
+            vertical-align: middle;
+            border: 0;
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+    </style>
+</head>
+<body onload="initSize()" onresize="initSize()">
+<!--top-->
+<header class="text-center">
+    <fieldset class="layui-elem-field layui-field-title">
+        <legend>Hello Cosplay</legend>
+    </fieldset>
+</header>
+<!--content-->
+<div id="content">
+    <ul class="flow-default" id="cp"></ul>
+</div>
+<!--bottom-->
+<div id="menu" class="menu">
+    <button style="background-color: #9d06fb;" class="layui-btn layui-btn-sm" onclick="uploadPic()"><i class="layui-icon"></i></button>
+</div>
+
+</body>
+<script src="layui/layui.js" charset="utf-8"></script>
+<script src="js/jquery-2.1.1.js" charset="utf-8"></script>
+<script>
+
+    function uploadPic() {
+        window.location.href = '/cp/uploadPic'
+    }
+
+    layui.use(['flow', 'layer', 'upload'], function () {
+        var $ = layui.jquery
+        var flow = layui.flow;
+        var pageSize = 5;
+        var pageCount=1;
+
+        function loadData() {
+            flow.load({
+                elem: '#cp',
+                scrollElem:'#cp',
+                isAuto: false,
+                done: function (pageIndex, next) {
+                    var lis = [];
+                    var load = layer.msg("数据加载中...", {icon: 16, shade: 0.5, time: 10 * 60 * 1000});
+                    $.ajax({
+                        url: '/cp/getData?ts' + new Date(),
+                        type: 'post',
+                        dataType: 'json',
+                        data: { size: pageSize, page: pageIndex },
+                        success: function (data) {
+                            layer.close(load);
+                            var  infos = data;
+                            pageCount = Math.ceil((infos.length/pageSize)+1);
+                            lis.push(infos);
+                            next(lis.join(''), pageIndex < pageCount);
+                        }
+                    });
+                }
+            });
+        }
+
+        loadData();
+    });
+
+    /*content高度*/
+    function initSize() {
+        var height = $(window).height() - $("header").height() - $("#description").height() - $("#menu").height();
+        $("#content").height(height + "px");
+    }
+</script>
+
+</html>
